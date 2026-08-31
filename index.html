@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Good Chat</title>
+    <title>Good Chat - Pro</title>
     <style>
         :root {
             --bg-dark: #121212;
@@ -56,13 +56,12 @@
             background-color: #2a3942;
             color: white;
             border: 1px solid #444;
-            padding: 5px 8px;
-            border-radius: 5px;
-            font-size: 12px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 13px;
             outline: none;
             cursor: pointer;
         }
-        /* Screens */
         .screen {
             flex: 1;
             display: flex;
@@ -110,7 +109,7 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
             border-radius: 5px;
             z-index: 100;
-            width: 160px;
+            width: 170px;
         }
         .context-menu div {
             padding: 10px 15px;
@@ -148,7 +147,7 @@
             font-weight: bold;
             cursor: pointer;
         }
-        /* Privacy Settings Screen */
+        /* Privacy & Settings Screen */
         .settings-body {
             flex: 1;
             padding: 20px;
@@ -167,14 +166,14 @@
         .settings-section h3 {
             margin-top: 0;
             color: #00a884;
-            font-size: 16px;
-            margin-bottom: 10px;
+            font-size: 15px;
+            margin-bottom: 12px;
         }
         .setting-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 0;
+            padding: 10px 0;
             border-bottom: 1px solid #333;
             font-size: 14px;
         }
@@ -185,7 +184,7 @@
             background-color: #111;
             color: white;
             border: 1px solid #444;
-            padding: 5px;
+            padding: 6px;
             border-radius: 4px;
             outline: none;
         }
@@ -194,7 +193,7 @@
             color: white;
             border: none;
             padding: 8px 15px;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
         }
@@ -221,7 +220,7 @@
                 <div class="message" onclick="showMenu(event, this)">வணக்கம்! Good Chat ஆப்பிற்கு உங்களை வரவேற்கிறோம்.</div>
             </div>
 
-            <!-- Context Menu -->
+            <!-- Context Menu (Long Press Options) -->
             <div class="context-menu" id="contextMenu">
                 <div onclick="replyMsg()" id="menuReply">மறுமொழி (Reply)</div>
                 <div onclick="copyMsg()" id="menuCopy">நகலெடு (Copy)</div>
@@ -242,7 +241,7 @@
             <div class="settings-body">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <h2 id="settingsHeading" style="margin: 0; color: white; font-size: 18px;">Privacy Settings</h2>
-                    <button class="back-btn" onclick="toggleSettings()" id="backBtn">Back to Chat</button>
+                    <button class="back-btn" onclick="toggleSettings()" id="backBtn">Back</button>
                 </div>
 
                 <div class="settings-section">
@@ -271,6 +270,18 @@
                         </select>
                     </div>
                 </div>
+
+                <div class="settings-section">
+                    <h3 id="secAccount">Friend Accounts & Profile Security</h3>
+                    <div class="setting-item">
+                        <span id="lblHidePhoto">Hide Photo from Specific Friend</span>
+                        <select id="hidePhotoSetting">
+                            <option value="none">None</option>
+                            <option value="friend1">Friend 1</option>
+                            <option value="friend2">Friend 2</option>
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -278,7 +289,6 @@
     <script>
         let activeMessage = null;
 
-        // Multilingual Dictionary
         const translations = {
             ta: {
                 title: "Good Chat",
@@ -292,12 +302,14 @@
                 edit: "திருத்து (Edit)",
                 delMe: "எனக்கு மட்டும் நீக்கு",
                 delAll: "அனைவருக்கும் நீக்கு",
-                settingsHead: "தனியுரிமை அமைப்புகள் (Privacy Settings)",
-                backChat: "சாட்டிற்கு திரும்பு",
+                settingsHead: "தனியுரிமை அமைப்புகள்",
+                backChat: "பின்செல்",
                 secPriv: "பிரைவசி கட்டுப்பாடுகள்",
+                secAcc: "நண்பர்கள் கணக்கு & புரொபைல் பாதுகாப்பு",
                 lblSeen: "கடைசியாக பார்த்தது (Last Seen)",
                 lblPhoto: "சுயவிவரப் படம் (Profile Photo)",
-                lblTicks: "நீல டிக் (Read Receipts)"
+                lblTicks: "நீல டிக் (Read Receipts)",
+                lblHide: "குறிப்பிட்ட நண்பருக்கு போட்டோவை மறை"
             },
             en: {
                 title: "Good Chat",
@@ -312,11 +324,13 @@
                 delMe: "Delete for me",
                 delAll: "Delete for everyone",
                 settingsHead: "Privacy Settings",
-                backChat: "Back to Chat",
+                backChat: "Back",
                 secPriv: "Privacy Controls",
+                secAcc: "Friend Accounts & Profile Security",
                 lblSeen: "Last Seen & Online",
                 lblPhoto: "Profile Photo Visibility",
-                lblTicks: "Read Receipts"
+                lblTicks: "Read Receipts",
+                lblHide: "Hide Photo from Specific Friend"
             }
         };
 
@@ -335,16 +349,16 @@
             document.getElementById('settingsHeading').textContent = translations[lang].settingsHead;
             document.getElementById('backBtn').textContent = translations[lang].backChat;
             document.getElementById('secPrivacy').textContent = translations[lang].secPriv;
+            document.getElementById('secAccount').textContent = translations[lang].secAcc;
             document.getElementById('lblLastSeen').textContent = translations[lang].lblSeen;
             document.getElementById('lblProfilePhoto').textContent = translations[lang].lblPhoto;
             document.getElementById('lblReadReceipts').textContent = translations[lang].lblTicks;
+            document.getElementById('lblHidePhoto').textContent = translations[lang].lblHide;
         }
 
         function toggleSettings() {
-            const chatScreen = document.getElementById('chatScreen');
-            const settingsScreen = document.getElementById('settingsScreen');
-            chatScreen.classList.toggle('hidden');
-            settingsScreen.classList.toggle('hidden');
+            document.getElementById('chatScreen').classList.toggle('hidden');
+            document.getElementById('settingsScreen').classList.toggle('hidden');
         }
 
         function sendMessage() {
