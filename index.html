@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+        <!DOCTYPE html>
 <html lang="ta">
 <head>
     <meta charset="UTF-8">
@@ -8,10 +8,12 @@
         :root {
             --bg-dark: #121212;
             --panel-grey: #1e1e1e;
-            --chat-grey: #2d2d2d;
+            --chat-white: #ffffff;
+            --text-dark: #333333;
             --text-light: #e0e0e0;
-            --text-muted: #888888;
-            --accent-color: #3b82f6;
+            --accent-color: #008069;
+            --bubble-sent: #d9fdd3;
+            --bubble-received: #f0f0f0;
         }
         body {
             margin: 0;
@@ -34,7 +36,8 @@
         }
         .app-header {
             padding: 15px;
-            background-color: var(--chat-grey);
+            background-color: #202c33;
+            color: white;
             font-size: 20px;
             font-weight: bold;
             text-align: center;
@@ -47,39 +50,43 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
+            background-color: var(--chat-white); /* உள்பேஜ் வெள்ளை நிறம் */
         }
         .message {
             max-width: 70%;
             padding: 10px 14px;
             border-radius: 8px;
             font-size: 14px;
-            background-color: var(--chat-grey);
-            color: var(--text-light);
+            background-color: var(--bubble-received);
+            color: var(--text-dark);
             align-self: flex-start;
+            word-break: break-word;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.1);
         }
         .message.sent {
-            background-color: #333333;
+            background-color: var(--bubble-sent);
             align-self: flex-end;
-            border: 1px solid #444;
+            color: var(--text-dark);
         }
         .chat-footer {
             padding: 10px 15px;
-            background-color: var(--chat-grey);
+            background-color: #f0f2f5;
             display: flex;
             gap: 10px;
-            border-top: 1px solid #333;
+            border-top: 1px solid #ddd;
         }
         .chat-footer input {
             flex: 1;
-            padding: 10px;
+            padding: 10px 15px;
             border-radius: 20px;
-            border: 1px solid #444;
-            background-color: var(--bg-dark);
-            color: var(--text-light);
+            border: 1px solid #ccc;
+            background-color: white;
+            color: var(--text-dark);
             outline: none;
+            font-size: 14px;
         }
         .chat-footer button {
-            padding: 10px 18px;
+            padding: 10px 20px;
             border: none;
             border-radius: 20px;
             background-color: var(--accent-color);
@@ -93,15 +100,41 @@
 
     <div class="app-container">
         <div class="app-header">Good Chat</div>
-        <div class="chat-body">
+        <div class="chat-body" id="chatBody">
             <div class="message">வணக்கம்! Good Chat ஆப்பிற்கு உங்களை வரவேற்கிறோம்.</div>
-            <div class="message sent">நன்றி! சாட் வேலை செய்யத் தொடங்கிவிட்டது.</div>
         </div>
         <div class="chat-footer">
-            <input type="text" placeholder="செய்தியை உள்ளிடவும்..." />
-            <button>அனுப்பு</button>
+            <input type="text" id="messageInput" placeholder="செய்தியை உள்ளிடவும்..." />
+            <button id="sendBtn">அனுப்பு</button>
         </div>
     </div>
+
+    <script>
+        const sendBtn = document.getElementById('sendBtn');
+        const messageInput = document.getElementById('messageInput');
+        const chatBody = document.getElementById('chatBody');
+
+        function sendMessage() {
+            const text = messageInput.value.trim();
+            if (text !== "") {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'message sent';
+                msgDiv.textContent = text;
+                chatBody.appendChild(msgDiv);
+                
+                messageInput.value = "";
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        
+        messageInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
 
 </body>
 </html>
