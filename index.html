@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indian God War - Epic Battle</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #111;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        h1 {
+            margin: 5px;
+            color: #ff9933;
+            text-shadow: 2px 2px 4px #000;
+        }
+        canvas {
+            border: 4px solid #ff9933;
+            background: linear-gradient(to bottom, #1a0000, #4d1a00);
+            box-shadow: 0px 0px 20px rgba(255, 153, 51, 0.5);
+        }
+        .instructions {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>இந்தியன் காட் வார்: குருக்ஷேத்ரா</h1>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <div class="instructions">இயக்க: இடது/வலது அம்புக்குறி (Arrow Keys) | குதிக்க: மேல் அம்புக்குறி | அஸ்திரம் ஏவ: Spacebar</div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // கேம் மாறிகள் (Game Variables)
+        let score = 0;
+        let health = 100;
+        let gameOvr = false;
+        let gameWon = false;
+
+        // வீரர் (அர்ச்சுனன் / தெய்வீக வீரன்)
+        let player = {
+            x: 50,
+            y: 280,
+            width: 40,
+            height: 60,
+            speed: 5,
+            dy: 0,
+            jumpPower: -12,
+            grounded: true,
+            color: "#00ffff"
+        };
+
+        // அஸ்திரங்கள் (Projectiles)
+        let arrows = [];
+
+        // அசுரர்கள் / எதிரிகள் (Demons)
+        let demons = [];
+        let demonTimer = 0;
+
+        // விசைப் பலகை கன்ட்ரோல் (Keyboard Controls)
+        let keys = {};
+        window.addEventListener("keydown", (e) => {
+            keys[e.code] = true;
+            if (e.code === "Space" && !gameOvr) {
+                arrows.push({
+                    x: player.x + player.width,
+                    y: player.y + 20,
+                    width: 20,
+                    height: 5,
+                    speed: 8,
+                    color: "#ffff00"
+                });
+            }
+        });
+        window.addEventListener("keyup", (e) => {
+            keys[e.code] = false;
+        });
+
+        // எதிரிகளை உருவாக்கும் முறை
+        function spawnDemon() {
+            if (Math.random() < 0.02) {
+                demons.push({
+                    x: canvas.width,
+                    y: 290,
+                    width: 40,
+                    height: 50,
+                    speed: 3 + Math.random() * 2,
+                    color: "#ff3300"
+                });
+            }
+        }
+
+        // விளையாட்டுப் பகுதிகளைப் புதுப்பித்தல் (Update Game Logic)
+        function update() {
+            if (gameOvr || gameWon) return;
+
+            // வீரர் இயக்கம்
+            if (keys["ArrowLeft"] && player.x > 0) {
+                player.x -= player.speed;
+            }
+            if (keys["ArrowRight"] && player.x < canvas.width / 2) {
+                player.x += player.speed;
+            }
+            if (keys["ArrowUp"] && player.grounded) {
+                player.dy = player.jumpPower;
+                player.grounded = false;
+            }
+
+            // ஈர்ப்பு விசை (Gravity)
+            player.dy += 0.6;
+            player.y += player.dy;
+
+            // தரை எல்லை சோதனை
+            if (player.y > 280) {
+                player.y = 280;
+                player.dy = 0;
+                player.grounded = true;
+            }
+
+            // அஸ்திர நகர்வு (Arrows update)
+            for (let i = arrows.length - 1; i >= 0; i--) {
+                arrows[i].x += arrows[i].speed;
+                if (arrows[i].x > canvas.width) {
+                    arrows.splice(i, 1);
+                }
+            }
+
+            // அசுரர்களை உருவாக்குதல் மற்றும் நகர்த்துதல்
+            spawnDemon();
+            for (let i = demons.length - 1; i >= 0; i--) {
+                demons[i].x -= demons[i].speed;
+
+                // வீரர் மீது அசுரர்கள் மோதும் போது
+                if (
+                    player.x < demons[i].x + demons[i].width &&
+                    player.x + player.width > demons[i].x &&
+                    player.y < demons[i].y + demons[i].height &&
+                    player.y + player.height > demons[i].y
+                ) {
+                    health -= 20;
+                    demons.splice(i, 1);
+                    if (health <= 0) {
+                        gameOvr = true;
+                    }
+                    continue;
+                }
+
+                // அஸ்திரம் அசுரர்கள் மீது படும் போது
+                for (let j = arrows.length - 1; j >= 0; j--) {
+                    if (
+                        arrows[j].x < demons[i].x + demons[i].width &&
+                        arrows[j].x + arrows[j].width > demons[i].x &&
+                        arrows[j].y < demons[i].y + demons[i].height &&
+                        arrows[j].y + arrows[j].height > demons[i].y
+                    ) {
+                        score += 10;
+                        demons.splice(i, 1);
+                        arrows.splice(j, 1);
+                        break;
+                    }
+                }
+
+                // ஸ்கோர் இலக்கு (வெற்றி நிலை)
+                if (score >= 100) {
+                    gameWon = true;
+                }
+            }
+        }
+
+        // திரையில் வரைதல் (Render Graphics)
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // தரை வரைதல்
+            ctx.fillStyle = "#8b4513";
+            ctx.fillRect(0, 340, canvas.width, 60);
+
+            // வீரர் (தெய்வீக வீரன்)
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            // தலை கிரீடம் போன்ற வடிவமைப்பு
+            ctx.fillStyle = "#ff9933";
+            ctx.fillRect(player.x + 5, player.y - 10, 30, 10);
+
+            // அஸ்திரங்கள்
+            ctx.fillStyle = "#ffff00";
+            arrows.forEach(arrow => {
+                ctx.fillRect(arrow.x, arrow.y, arrow.width, arrow.height);
+            });
+
+            // அசுரர்கள்
+            demons.forEach(demon => {
+                ctx.fillStyle = demon.color;
+                ctx.fillRect(demon.x, demon.y, demon.width, demon.height);
+                // கொம்புகள் போன்ற அமைப்பு
+                ctx.fillStyle = "#000";
+                ctx.fillRect(demon.x + 5, demon.y - 8, 8, 8);
+                ctx.fillRect(demon.x + 25, demon.y - 8, 8, 8);
+            });
+
+            // UI விவரங்கள் (Score & Health)
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "18px Arial";
+            ctx.fillText("ஆற்றல் (Health): " + health + "%", 20, 30);
+            ctx.fillText("புள்ளி (Score): " + score + " / 100", 20, 60);
+
+            // கேம் ஓவர் நிலை
+            if (gameOvr) {
+                ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#ff3300";
+                ctx.font = "36px Arial";
+                ctx.fillText("போரில் வீழ்ந்தீர் (Game Over)", 200, 200);
+            }
+
+            // வெற்றி நிலை
+            if (gameWon) {
+                ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#00ff00";
+                ctx.font = "36px Arial";
+                ctx.fillText("வெற்றி பெற்றது! (Victory!)", 220, 200);
+            }
+        }
+
+        // கேம் லூப் (Game Loop)
+        function loop() {
+            update();
+            draw();
+            requestAnimationFrame(loop);
+        }
+
+        loop();
+    </script>
+</body>
+</html>
